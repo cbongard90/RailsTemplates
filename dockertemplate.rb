@@ -179,6 +179,8 @@ after_bundle do
   # Heroku
   ########################################
   run "bundle lock --add-platform x86_64-linux"
+  run "bundle add dockerfile-rails --optimistic --group development"
+  run "./bin/rails generate dockerfile"
 
   # Git initialize
   git :init
@@ -196,9 +198,6 @@ after_bundle do
     POSTGRES_PASSWORD=password123
     RAILS_MASTER_KEY=your_rails_key
   TXT
-
-  git add: "."
-  git commit: "-m 'Updated env file'"
 
   # Database
   run "rm config/database.yml"
@@ -281,23 +280,18 @@ after_bundle do
     Enabled: false
   YML
 
-  git add: "."
-  git commit: "-m 'Updated rubocop'"
-
   # Docker
-  run "bundle add dockerfile-rails --optimistic --group development"
-  run "./bin/rails generate dockerfile"
 
   gsub_file(
     "Dockerfile",
-    'apt-get install --no-install-recommends -y build-essential libpq-dev',
+    'apt-get install --no-install-recommends -y build-essential git libpq-dev',
     'apt-get install --no-install-recommends -y build-essential git libpq-dev libvips pkg-config bash bash-completion libffi-dev tzdata postgresql nodejs npm yarn'
   )
 
 
 
-  run "touch '.docker-compose.yml'"
-  append_file '.docker-compose.yml', <<~YML
+  run "touch 'docker-compose.yml'"
+  append_file 'docker-compose.yml', <<~YML
     version: '3'
     services:
       db:
@@ -337,7 +331,7 @@ after_bundle do
 
   inject_into_file "bin/docker-entrypoint", after: 'if [ "${*}" == "./bin/rails server" ]; then' do
     <<~TEXT
-      ./bin/rails db:create
+      \n  ./bin/rails db:create
     TEXT
   end
 
