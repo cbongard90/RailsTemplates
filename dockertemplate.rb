@@ -321,6 +321,12 @@ after_bundle do
       app-storage: {}
   YML
 
+  inject_into_file "bin/docker-entrypoint", after: 'if [ "${*}" == "./bin/rails server" ]; then' do
+    <<~TEXT
+      ./bin/rails db:create
+    TEXT
+  end
+
 
 
   # Git
