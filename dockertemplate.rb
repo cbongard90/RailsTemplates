@@ -180,6 +180,11 @@ after_bundle do
   ########################################
   run "bundle lock --add-platform x86_64-linux"
 
+  # Git initialize
+  git :init
+  git add: "."
+  git commit: "-m 'Initialised the main app'"
+
   # Dotenv
   ########################################
   run "touch '.env'"
@@ -191,6 +196,9 @@ after_bundle do
     POSTGRES_PASSWORD=password123
     RAILS_MASTER_KEY=your_rails_key
   TXT
+
+  git add: "."
+  git commit: "-m 'Updated env file'"
 
   # Database
   run "rm config/database.yml"
@@ -222,6 +230,9 @@ after_bundle do
       username: <%= ENV['POSTGRES_USER'] %>
       password: <%= ENV['POSTGRES_PASSWORD'] %>
   YML
+
+  git add: "."
+  git commit: "-m 'Updated database'"
 
   # Rubocop
   ########################################
@@ -270,9 +281,12 @@ after_bundle do
     Enabled: false
   YML
 
+  git add: "."
+  git commit: "-m 'Updated rubocop'"
+
   # Docker
   run "bundle add dockerfile-rails --optimistic --group development"
-  run "bin/rails generate dockerfile"
+  run "./bin/rails generate dockerfile"
 
   gsub_file(
     "Dockerfile",
@@ -331,7 +345,6 @@ after_bundle do
 
   # Git
   ########################################
-  git :init
   git add: "."
-  git commit: "-m 'Initial commit with devise template'"
+  git commit: "-m 'Updated the docker components'"
 end
