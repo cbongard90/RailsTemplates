@@ -187,21 +187,38 @@ after_bundle do
   git add: "."
   git commit: "-m 'Initialised the main app'"
 
+  loop do
+    DB_NAME = ask('[Required] Please state the name of the database:')
+    break if DB_NAME.present?
+  end
+
+  loop do
+    DB_USER = ask('[Required] Please state the user of the database:')
+    break if DB_USER.present?
+  end
+
+  loop do
+    DB_PASSWORD = ask('[Required] Please state the password of the database:')
+    break if DB_PASSWORD.present?
+  end
+
   # Dotenv
   ########################################
   run "touch '.env'"
   append_file '.env', <<~TXT
     RAILS_ENV=production
     POSTGRES_HOST=db
-    POSTGRES_DB=yourproject_production
-    POSTGRES_USER=defaultuser
-    POSTGRES_PASSWORD=password123
+    POSTGRES_DB=#{DB_NAME}_production
+    POSTGRES_USER=#{DB_USER}
+    POSTGRES_PASSWORD=#{DB_PASSWORD}
     RAILS_MASTER_KEY=your_rails_key
   TXT
 
   # Database
   run "rm config/database.yml"
   run "touch 'config/database.yml'"
+
+
 
   append_file 'config/database.yml', <<~YML
     default: &default
@@ -213,13 +230,13 @@ after_bundle do
 
     development:
       <<: *default
-      database: docker_template_psql_development
+      database: #{DB_NAME}_development
       username: <%= ENV['POSTGRES_USER'] %>
       password: <%= ENV['POSTGRES_PASSWORD'] %>
 
     test:
       <<: *default
-      database: docker_template_psql_test
+      database: #{DB_NAME}_test
       username: <%= ENV['POSTGRES_USER'] %>
       password: <%= ENV['POSTGRES_PASSWORD'] %>
 
@@ -296,7 +313,7 @@ after_bundle do
     services:
       db:
         image: postgres:14.2-alpine
-        container_name: project-postgres-14.2
+        container_name: #{DB_NAME}
         volumes:
           - postgres_data:/var/lib/postgresql/data
         command:
